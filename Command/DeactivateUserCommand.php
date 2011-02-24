@@ -65,6 +65,7 @@ EOT
         $user->setEnabled(false);
 
         $userManager->updateUser($user);
+        $userManager->flush();
 
         $output->writeln(sprintf('User "%s" has been deactivated.', $user->getUsername()));
     }

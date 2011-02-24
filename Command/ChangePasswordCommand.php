@@ -55,6 +55,7 @@ EOT
         }
         $user->setPlainPassword($input->getArgument('password'));
         $userManager->updateUser($user);
+        $userManager->flush();
 
         $output->writeln(sprintf('Changed password for user <comment>%s</comment>', $user->getUsername()));
     }

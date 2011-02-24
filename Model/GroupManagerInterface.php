@@ -72,4 +72,11 @@ interface GroupManagerInterface
      * @return void
      */
     function updateGroup(GroupInterface $group);
+
+    /**
+     * Flushes the changes
+     *
+     * @return void
+     */
+    function flush();
 }

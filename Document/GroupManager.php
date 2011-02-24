@@ -60,6 +60,13 @@ class GroupManager extends BaseGroupManager
     public function updateGroup(GroupInterface $group)
     {
         $this->dm->persist($group);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function flush()
+    {
         $this->dm->flush();
     }
 }

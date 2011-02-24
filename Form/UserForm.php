@@ -93,6 +93,7 @@ class UserForm extends Form
                 }
 
                 $this->userManager->updateUser($user);
+                $this->userManager->flush();
 
                 return true;
             }

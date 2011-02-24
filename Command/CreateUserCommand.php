@@ -90,6 +90,7 @@ EOT
         $user->setEnabled(!$input->getOption('inactive'));
         $user->setSuperAdmin(!!$input->getOption('super-admin'));
         $userManager->updateUser($user);
+        $userManager->flush();
 
         if ($this->container->has('security.acl.provider')) {
             $provider = $this->container->get('security.acl.provider');

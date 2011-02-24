@@ -66,6 +66,7 @@ EOT
         $user->setSuperAdmin(true);
 
         $userManager->updateUser($user);
+        $userManager->flush();
 
         $output->writeln(sprintf('User "%s" has been promoted as a super administrator.', $user->getUsername()));
     }

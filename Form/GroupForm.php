@@ -60,6 +60,7 @@ class GroupForm extends Form
 
             if ($this->isValid()) {
                 $this->groupManager->updateGroup($group);
+                $this->groupManager->flush();
                 return true;
             }
         }

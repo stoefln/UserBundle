@@ -65,6 +65,7 @@ EOT
         $user->setSuperAdmin(false);
 
         $userManager->updateUser($user);
+        $userManager->flush();
 
         $output->writeln(sprintf('Super administrator "%s" has been demoted as a simple user.', $user->getUsername()));
     }

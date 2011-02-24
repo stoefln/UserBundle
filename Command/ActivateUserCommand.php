@@ -65,6 +65,7 @@ EOT
         $user->setEnabled(true);
 
         $userManager->updateUser($user);
+        $userManager->flush();
 
         $output->writeln(sprintf('User "%s" has been activated.', $user->getUsername()));
     }

@@ -78,6 +78,13 @@ class UserManager extends BaseUserManager
         $this->updatePassword($user);
 
         $this->em->persist($user);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function flush()
+    {
         $this->em->flush();
     }
 

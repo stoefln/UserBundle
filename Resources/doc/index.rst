@@ -347,6 +347,16 @@ A new instance of your User class can be created by the user manager::
 
 `$user` is now an Entity or a Document, depending on the configuration.
 
+Update a user
+-------------
+
+When modifying a user you have to call ``$userManager->updateUser($user)``. This
+will update the encoded password and the canonical fields and take care of
+persisting the user. This method will not flush the change to let you a full
+control on the Doctrine workflow of your application.
+The ``flush`` method of the UserManager allows you to do the flush without
+wondering if the project uses the ODM or the ORM. This is the way the bundle does.
+
 Configuration example:
 ======================
 
@@ -400,24 +410,17 @@ All configuration options are listed below::
 Templating
 ----------
 
-The template names are not configurable, however Symfony2 makes it possible
-to extend a bundle by creating a new Bundle and implementing a getParent()
-method inside that new Bundle's definition:
+The template names are not configurable, however Symfony2 makes it possible to
+overwrite any template by using the ``app/views`` folder. For example
+``FOSUserBundle:User:new.html.twig`` can be replaced by putting an alternative
+template in ``app/views/FOSUserBundle/User/new.html.twig`` to replace the
+template provided by the bundle which is
+``src/FOS/UserBundle/Resources/views/User/new.twig``.
 
-    class MyProjectUserBundle extends Bundle
-    {
-        public function getParent()
-        {
-            return 'FOSUserBundle';
-        }
-    }
-
-For example ``src/FOS/UserBundle/Resources/views/User/new.twig`` can be
-replaced inside an application by putting a file with alternative content in
-``src/MyProject/FOS/UserBundle/Resources/views/User/new.twig``.
-
-You can use a different templating engine by configuring it but you will have to
-create all the needed templates as only twig templates are provided.
+You can use a different templating engine if you don't want to use Twig in your
+project. Just specify the engine in the configuration and it will be used for
+all templates used by the bundle. Note that you will have to create all the
+needed templates as only twig templates are provided.
 
 Validation
 ----------
