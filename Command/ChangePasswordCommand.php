@@ -2,17 +2,17 @@
 
 namespace FOS\UserBundle\Command;
 
-use FOS\UserBundle\Model\User;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Bundle\FrameworkBundle\Command\Command as BaseCommand;
+use Symfony\Bundle\FrameworkBundle\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use FOS\UserBundle\Model\User;
 
 /**
  * CreateUserCommand
  */
-class ChangePasswordCommand extends BaseCommand
+class ChangePasswordCommand extends Command
 {
     /**
      * @see Command
@@ -46,17 +46,16 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->container->get('security.context')->setToken(new UsernamePasswordToken('command.line', null, $this->container->getParameter('fos_user.firewall_name'), array(User::ROLE_SUPERADMIN)));
+        $cliToken = new UsernamePasswordToken('command.line', null, $this->container->getParameter('fos_user.firewall_name'), array(User::ROLE_SUPERADMIN));
+        $this->container->get('security.context')->setToken($cliToken);
 
-        $userManager = $this->container->get('fos_user.user_manager');
-        $user = $userManager->findUserByUsername($input->getArgument('username'));
-        if (!$user) {
-            throw new \InvalidArgumentException(sprintf('User identified by "%s" username does not exist.', $input->getArgument('username')));
-        }
-        $user->setPlainPassword($input->getArgument('password'));
-        $userManager->updateUser($user);
+        $username = $input->getArgument('username');
+        $password = $input->getArgument('password');
 
-        $output->writeln(sprintf('Changed password for user <comment>%s</comment>', $user->getUsername()));
+        $manipulator = $this->container->get('fos_user.user_manipulator');
+        $manipulator->changePassword($username, $password);
+
+        $output->writeln(sprintf('Changed password for user <comment>%s</comment>', $username));
     }
 
     /**

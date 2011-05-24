@@ -24,7 +24,7 @@ class FOSUserExtension extends Extension
         }
         $loader->load(sprintf('%s.xml', $config['db_driver']));
 
-        foreach (array('controller', 'form', 'validator', 'security', 'util', 'mailer', 'listener') as $basename) {
+        foreach (array('services', 'controller', 'form', 'validator', 'security', 'util', 'mailer', 'listener') as $basename) {
             $loader->load(sprintf('%s.xml', $basename));
         }
 
@@ -44,6 +44,21 @@ class FOSUserExtension extends Extension
                     'form_validation_groups' => 'fos_user.form.group.validation_groups'
                 ),
             ));
+        }
+
+        if ($config['use_listener']) {
+            switch ($config['db_driver']) {
+                case 'orm':
+                    $container->getDefinition('fos_user.user_listener')->addTag('doctrine.event_subscriber');
+                    break;
+
+                case 'mongodb':
+                    $container->getDefinition('fos_user.user_listener')->addTag('doctrine.common.event_subscriber');
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         $this->remapParametersNamespaces($config, $container, array(

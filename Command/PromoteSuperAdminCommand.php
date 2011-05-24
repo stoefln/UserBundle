@@ -2,12 +2,10 @@
 
 namespace FOS\UserBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\Command as BaseCommand;
+use Symfony\Bundle\FrameworkBundle\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use FOS\UserBundle\Model\User;
 
@@ -16,6 +14,7 @@ use FOS\UserBundle\Model\User;
  *
  * (c) Matthieu Bontemps <matthieu@knplabs.com>
  * (c) Thibault Duplessis <thibault.duplessis@gmail.com>
+ * (c) Luis Cordova <cordoval@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
@@ -29,7 +28,7 @@ use FOS\UserBundle\Model\User;
  * @author     Matthieu Bontemps <matthieu@knplabs.com>
  * @author     Thibault Duplessis <thibault.duplessis@gmail.com>
  */
-class PromoteSuperAdminCommand extends BaseCommand
+class PromoteSuperAdminCommand extends Command
 {
     /**
      * @see Command
@@ -55,19 +54,15 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->container->get('security.context')->setToken(new UsernamePasswordToken('command.line', null, $this->container->getParameter('fos_user.firewall_name'), array(User::ROLE_SUPERADMIN)));
+        $cliToken = new UsernamePasswordToken('command.line', null, $this->container->getParameter('fos_user.firewall_name'), array(User::ROLE_SUPERADMIN));
+        $this->container->get('security.context')->setToken($cliToken);
 
-        $userManager = $this->container->get('fos_user.user_manager');
-        $user = $userManager->findUserByUsername($input->getArgument('username'));
+        $username = $input->getArgument('username');
 
-        if (!$user) {
-            throw new \InvalidArgumentException(sprintf('The user "%s" does not exist', $input->getArgument('username')));
-        }
-        $user->setSuperAdmin(true);
+        $manipulator = $this->container->get('fos_user.user_manipulator');
+        $manipulator->promote($username);
 
-        $userManager->updateUser($user);
-
-        $output->writeln(sprintf('User "%s" has been promoted as a super administrator.', $user->getUsername()));
+        $output->writeln(sprintf('User "%s" has been promoted as a super administrator.', $username));
     }
 
     /**

@@ -2,40 +2,26 @@
 
 namespace FOS\UserBundle\Command;
 
-use Symfony\Component\Security\Acl\Permission\MaskBuilder;
-
-use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-
-use FOS\UserBundle\Model\User;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Bundle\FrameworkBundle\Command\Command as BaseCommand;
+use Symfony\Bundle\FrameworkBundle\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\Output;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use FOS\UserBundle\Model\User;
 
 /*
  * This file is part of the FOS\UserBundle
  *
  * (c) Matthieu Bontemps <matthieu@knplabs.com>
  * (c) Thibault Duplessis <thibault.duplessis@gmail.com>
+ * (c) Luis Cordova <cordoval@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-/**
- * CreateUserCommand.
- *
- * @package    Bundle
- * @subpackage FOS\UserBundle
- * @author     Matthieu Bontemps <matthieu@knplabs.com>
- * @author     Thibault Duplessis <thibault.duplessis@gmail.com>
- */
-class CreateUserCommand extends BaseCommand
+class CreateUserCommand extends Command
 {
     /**
      * @see Command
@@ -80,26 +66,20 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->container->get('security.context')->setToken(new UsernamePasswordToken('command.line', null, $this->container->getParameter('fos_user.firewall_name'), array(User::ROLE_SUPERADMIN)));
+        $cliToken = new UsernamePasswordToken('command.line', null, $this->container->getParameter('fos_user.firewall_name'), array(User::ROLE_SUPERADMIN));
+        $this->container->get('security.context')->setToken($cliToken);
 
-        $userManager = $this->container->get('fos_user.user_manager');
-        $user = $userManager->createUser();
-        $user->setUsername($input->getArgument('username'));
-        $user->setEmail($input->getArgument('email'));
-        $user->setPlainPassword($input->getArgument('password'));
-        $user->setEnabled(!$input->getOption('inactive'));
-        $user->setSuperAdmin(!!$input->getOption('super-admin'));
-        $userManager->updateUser($user);
+        $username   = $input->getArgument('username');
+        $email      = $input->getArgument('email');
+        $password   = $input->getArgument('password');
+        $inactive   = $input->getOption('inactive');
+        $superadmin = $input->getOption('super-admin');
 
-        if ($this->container->has('security.acl.provider')) {
-            $provider = $this->container->get('security.acl.provider');
-            $oid = ObjectIdentity::fromDomainObject($user);
-            $acl = $provider->createAcl($oid);
-            $acl->insertObjectAce(UserSecurityIdentity::fromAccount($user), MaskBuilder::MASK_OWNER);
-            $provider->updateAcl($acl);
-        }
+        $manipulator = $this->container->get('fos_user.user_manipulator');
+        $user = $manipulator->create($username, $password, $email, !$inactive, $superadmin);
+        $this->container->get('fos_user.ace_manager')->createUserAce($user);
 
-        $output->writeln(sprintf('Created user <comment>%s</comment>', $user->getUsername()));
+        $output->writeln(sprintf('Created user <comment>%s</comment>', $username));
     }
 
     /**
